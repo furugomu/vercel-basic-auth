@@ -6,18 +6,20 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   return <Component {...pageProps} />;
 }
 
-MyApp.getInitialProps = async (ctx: AppContext) => {
-  const appProps = await App.getInitialProps(ctx);
+if (process.env.VERCEL) {
+  MyApp.getInitialProps = async (ctx: AppContext) => {
+    const appProps = await App.getInitialProps(ctx);
 
-  const { req, res } = ctx.ctx;
-  if (!auth(req)) {
-    res.statusCode = 401;
-    res.setHeader("WWW-Authenticate", 'Basic realm="Access to staging site"');
-    res.end();
-    return;
-  }
-  return { ...appProps };
-};
+    const { req, res } = ctx.ctx;
+    if (!auth(req)) {
+      res.statusCode = 401;
+      res.setHeader("WWW-Authenticate", 'Basic realm="Access to staging site"');
+      res.end();
+      return;
+    }
+    return { ...appProps };
+  };
+}
 
 const auth = (req: IncomingMessage) => {
   // 両方未設定なら通過
